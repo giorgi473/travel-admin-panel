@@ -12,14 +12,12 @@ export default function DashboardPage() {
           <main className="flex-1 overflow-y-auto">
             <div className="p-8">
               <div className="mb-8">
-                <h1 className="text-3xl font-bold text-foreground">
-                  Dashboard
-                </h1>
+                <h1 className="text-3xl font-bold text-foreground">Tours</h1>
                 <p className="text-muted-foreground">
                   Welcome back! Here's your tourism overview.
                 </p>
               </div>
-              sdsdsd
+              <section>sdsdsd</section>
             </div>
           </main>
         </div>
