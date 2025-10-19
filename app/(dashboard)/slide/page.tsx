@@ -4,11 +4,28 @@
 // import { AdminSidebar } from "@/components/admin-sidebar";
 // import { AdminHeader } from "@/components/admin-header";
 // import { SidebarProvider } from "@/components/sidebar-provider";
-// import { useState } from "react";
+// import { useState, useEffect } from "react";
 // import { Button } from "@/components/ui/button";
 // import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-// import { Plus, Loader2, Upload, X } from "lucide-react";
-// import { createSlide } from "@/actions/slider-actions";
+// import {
+//   Plus,
+//   Loader2,
+//   Upload,
+//   X,
+//   Trash2,
+//   Eye,
+//   Pencil,
+//   Search,
+//   ArrowUpDown,
+//   ArrowUp,
+//   ArrowDown,
+// } from "lucide-react";
+// import {
+//   createSlide,
+//   getAllSlides,
+//   deleteSlide,
+//   updateSlide,
+// } from "@/actions/slider-actions";
 // import { useForm } from "react-hook-form";
 // import { zodResolver } from "@hookform/resolvers/zod";
 // import * as z from "zod";
@@ -23,6 +40,24 @@
 // import { Input } from "@/components/ui/input";
 // import { Textarea } from "@/components/ui/textarea";
 // import { toast } from "sonner";
+// import {
+//   Table,
+//   TableBody,
+//   TableCell,
+//   TableHead,
+//   TableHeader,
+//   TableRow,
+// } from "@/components/ui/table";
+// import {
+//   AlertDialog,
+//   AlertDialogAction,
+//   AlertDialogCancel,
+//   AlertDialogContent,
+//   AlertDialogDescription,
+//   AlertDialogFooter,
+//   AlertDialogHeader,
+//   AlertDialogTitle,
+// } from "@/components/ui/alert-dialog";
 
 // const englishRegex = /^[A-Za-z0-9\s.,!?'-]*$/;
 // const georgianRegex = /^[ა-ჰ0-9\s.,!?'-]*$/;
@@ -30,13 +65,14 @@
 // const formSchema = z.object({
 //   image: z
 //     .instanceof(File)
-//     .refine((file) => file.size > 0, "სურათი აუცილებელია")
+//     .refine((file) => file.size === 0 || file.size > 0, "სურათი აუცილებელია")
 //     .refine(
-//       (file) => file.size <= 5 * 1024 * 1024,
+//       (file) => file.size === 0 || file.size <= 5 * 1024 * 1024,
 //       "სურათი უნდა იყოს 5MB-ზე ნაკლები"
 //     )
 //     .refine(
 //       (file) =>
+//         file.size === 0 ||
 //         [
 //           "image/jpeg",
 //           "image/jpg",
@@ -73,9 +109,58 @@
 
 // type FormValues = z.infer<typeof formSchema>;
 
+// interface Slide {
+//   id: number;
+//   src: string;
+//   title: {
+//     en: string;
+//     ka: string;
+//   };
+//   description: {
+//     en: string;
+//     ka: string;
+//   };
+//   createdAt?: string;
+//   updatedAt?: string;
+// }
+
 // export default function DashboardPage() {
 //   const [saving, setSaving] = useState(false);
 //   const [imagePreview, setImagePreview] = useState<string | null>(null);
+//   const [slides, setSlides] = useState<Slide[]>([]);
+//   const [loading, setLoading] = useState(true);
+//   const [deleteId, setDeleteId] = useState<number | null>(null);
+//   const [deleting, setDeleting] = useState(false);
+//   const [editingSlide, setEditingSlide] = useState<Slide | null>(null);
+//   const [isEditMode, setIsEditMode] = useState(false);
+//   const [searchQuery, setSearchQuery] = useState("");
+//   const [sortField, setSortField] = useState<
+//     "title" | "createdAt" | "updatedAt"
+//   >("createdAt");
+//   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+
+//   const formatDate = (dateString?: string) => {
+//     if (!dateString) return "-";
+//     const date = new Date(dateString);
+//     const now = new Date();
+//     const diffInMs = now.getTime() - date.getTime();
+//     const diffInMinutes = Math.floor(diffInMs / 60000);
+//     const diffInHours = Math.floor(diffInMs / 3600000);
+//     const diffInDays = Math.floor(diffInMs / 86400000);
+
+//     if (diffInMinutes < 1) return "ახლახან";
+//     if (diffInMinutes < 60) return `${diffInMinutes} წუთის წინ`;
+//     if (diffInHours < 24) return `${diffInHours} საათის წინ`;
+//     if (diffInDays < 7) return `${diffInDays} დღის წინ`;
+
+//     return new Intl.DateTimeFormat("ka-GE", {
+//       day: "2-digit",
+//       month: "short",
+//       year: "numeric",
+//       hour: "2-digit",
+//       minute: "2-digit",
+//     }).format(date);
+//   };
 
 //   const form = useForm<FormValues>({
 //     resolver: zodResolver(formSchema),
@@ -87,6 +172,27 @@
 //       descriptionKa: "",
 //     },
 //   });
+
+//   const fetchSlides = async () => {
+//     setLoading(true);
+//     try {
+//       const result = await getAllSlides();
+//       if (result.success && Array.isArray(result.data)) {
+//         setSlides(result.data);
+//       } else {
+//         toast.error("მონაცემების ჩატვირთვა ვერ მოხერხდა");
+//       }
+//     } catch (error) {
+//       console.error("Error fetching slides:", error);
+//       toast.error("შეცდომა მონაცემების ჩატვირთვისას");
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   useEffect(() => {
+//     fetchSlides();
+//   }, []);
 
 //   const handleEnglishInput = (
 //     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -132,16 +238,92 @@
 //     console.log("🗑️ Image removed");
 //   };
 
-//   const onSubmit = async (values: FormValues) => {
-//     console.log("=== 🚀 Form Submit START ===");
-//     console.log("Form values:", {
-//       titleEn: values.titleEn,
-//       titleKa: values.titleKa,
-//       descriptionEn: values.descriptionEn,
-//       descriptionKa: values.descriptionKa,
-//       imageSize: values.image.size,
+//   const handleDelete = async (id: number) => {
+//     setDeleting(true);
+//     try {
+//       const result = await deleteSlide(id);
+//       if (result.success) {
+//         toast.success("სლაიდი წარმატებით წაიშალა");
+//         await fetchSlides();
+//       } else {
+//         toast.error(result.error || "წაშლა ვერ მოხერხდა");
+//       }
+//     } catch (error) {
+//       console.error("Delete error:", error);
+//       toast.error("შეცდომა წაშლისას");
+//     } finally {
+//       setDeleting(false);
+//       setDeleteId(null);
+//     }
+//   };
+
+//   const handleEdit = (slide: Slide) => {
+//     setEditingSlide(slide);
+//     setIsEditMode(true);
+//     setImagePreview(slide.src);
+//     form.setValue("titleEn", slide.title.en);
+//     form.setValue("titleKa", slide.title.ka);
+//     form.setValue("descriptionEn", slide.description.en || "");
+//     form.setValue("descriptionKa", slide.description.ka || "");
+//     window.scrollTo({ top: 0, behavior: "smooth" });
+//   };
+
+//   const handleCancelEdit = () => {
+//     setEditingSlide(null);
+//     setIsEditMode(false);
+//     form.reset();
+//     setImagePreview(null);
+//   };
+
+//   const handleSort = (field: "title" | "createdAt" | "updatedAt") => {
+//     if (sortField === field) {
+//       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+//     } else {
+//       setSortField(field);
+//       setSortOrder("desc");
+//     }
+//   };
+
+//   const filteredAndSortedSlides = slides
+//     .filter((slide) => {
+//       const query = searchQuery.toLowerCase();
+//       return (
+//         slide.title.en.toLowerCase().includes(query) ||
+//         slide.title.ka.toLowerCase().includes(query) ||
+//         slide.description.en?.toLowerCase().includes(query) ||
+//         slide.description.ka?.toLowerCase().includes(query)
+//       );
+//     })
+//     .sort((a, b) => {
+//       let comparison = 0;
+
+//       if (sortField === "title") {
+//         comparison = a.title.en.localeCompare(b.title.en);
+//       } else if (sortField === "createdAt") {
+//         const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+//         const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+//         comparison = dateA - dateB;
+//       } else if (sortField === "updatedAt") {
+//         const dateA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+//         const dateB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+//         comparison = dateA - dateB;
+//       }
+
+//       return sortOrder === "asc" ? comparison : -comparison;
 //     });
 
+//   const SortIcon = ({ field }: { field: typeof sortField }) => {
+//     if (sortField !== field)
+//       return <ArrowUpDown className="h-4 w-4 ml-1 text-muted-foreground" />;
+//     return sortOrder === "asc" ? (
+//       <ArrowUp className="h-4 w-4 ml-1 text-primary" />
+//     ) : (
+//       <ArrowDown className="h-4 w-4 ml-1 text-primary" />
+//     );
+//   };
+
+//   const onSubmit = async (values: FormValues) => {
+//     console.log("=== 🚀 Form Submit START ===");
 //     setSaving(true);
 
 //     try {
@@ -149,7 +331,6 @@
 
 //       reader.onloadend = async () => {
 //         const base64Image = reader.result as string;
-//         console.log("✅ Base64 created, length:", base64Image.length);
 
 //         const slideData = {
 //           src: base64Image,
@@ -163,10 +344,20 @@
 //           },
 //         };
 
-//         console.log("📤 Calling createSlide action...");
-//         const result = await createSlide(slideData);
-
-//         console.log("📥 Action result:", result);
+//         let result;
+//         if (isEditMode && editingSlide) {
+//           // განახლება
+//           result = await updateSlide(editingSlide.id, slideData);
+//           if (result.success) {
+//             toast.success("✅ სლაიდი წარმატებით განახლდა!");
+//           }
+//         } else {
+//           // ახალი შექმნა
+//           result = await createSlide(slideData);
+//           if (result.success) {
+//             toast.success("✅ სლაიდი წარმატებით შეიქმნა!");
+//           }
+//         }
 
 //         if (!result.success) {
 //           toast.error(result.error || "შეცდომა");
@@ -174,12 +365,12 @@
 //           return;
 //         }
 
-//         toast.success("✅ სლაიდი წარმატებით შეიქმნა!");
 //         form.reset();
 //         setImagePreview(null);
+//         setIsEditMode(false);
+//         setEditingSlide(null);
 //         setSaving(false);
-
-//         console.log("=== ✨ Form Submit END (SUCCESS) ===");
+//         await fetchSlides();
 //       };
 
 //       reader.onerror = (error) => {
@@ -187,6 +378,35 @@
 //         toast.error("სურათის წაკითხვა ვერ მოხერხდა");
 //         setSaving(false);
 //       };
+
+//       // თუ სურათი არ შეიცვალა რედაქტირებისას, გამოიყენე არსებული
+//       if (isEditMode && values.image.size === 0 && editingSlide) {
+//         const slideData = {
+//           src: editingSlide.src,
+//           title: {
+//             en: values.titleEn,
+//             ka: values.titleKa,
+//           },
+//           description: {
+//             en: values.descriptionEn || "",
+//             ka: values.descriptionKa || "",
+//           },
+//         };
+
+//         const result = await updateSlide(editingSlide.id, slideData);
+//         if (result.success) {
+//           toast.success("✅ სლაიდი წარმატებით განახლდა!");
+//           form.reset();
+//           setImagePreview(null);
+//           setIsEditMode(false);
+//           setEditingSlide(null);
+//           await fetchSlides();
+//         } else {
+//           toast.error(result.error || "შეცდომა");
+//         }
+//         setSaving(false);
+//         return;
+//       }
 
 //       reader.readAsDataURL(values.image);
 //     } catch (error) {
@@ -203,17 +423,35 @@
 //         <div className="flex-1 flex flex-col overflow-hidden">
 //           <AdminHeader />
 //           <main className="flex-1 overflow-y-auto">
-//             <div className="p-8">
-//               <div className="mb-8">
-//                 <h1 className="text-3xl font-bold">ახალი სლაიდის დამატება</h1>
-//                 <p className="text-muted-foreground">შექმენით ახალი სლაიდი</p>
-//               </div>
-//               <section>
+//             <div className="p-8 space-y-8">
+//               {/* ახალი სლაიდის დამატება */}
+//               <div>
+//                 <div className="mb-8">
+//                   <h1 className="text-3xl font-bold">
+//                     {isEditMode
+//                       ? "სლაიდის რედაქტირება"
+//                       : "ახალი სლაიდის დამატება"}
+//                   </h1>
+//                   <p className="text-muted-foreground">
+//                     {isEditMode
+//                       ? "განაახლეთ სლაიდის ინფორმაცია"
+//                       : "შექმენით ახალი სლაიდი"}
+//                   </p>
+//                 </div>
 //                 <Card>
 //                   <CardHeader>
 //                     <CardTitle className="flex items-center gap-2">
-//                       <Plus className="h-5 w-5" />
-//                       ახალი სლაიდი
+//                       {isEditMode ? (
+//                         <>
+//                           <Pencil className="h-5 w-5" />
+//                           სლაიდის რედაქტირება
+//                         </>
+//                       ) : (
+//                         <>
+//                           <Plus className="h-5 w-5" />
+//                           ახალი სლაიდი
+//                         </>
+//                       )}
 //                     </CardTitle>
 //                   </CardHeader>
 //                   <CardContent>
@@ -230,7 +468,15 @@
 //                           }) => (
 //                             <FormItem>
 //                               <FormLabel>
-//                                 სურათი<span className="text-red-500">*</span>
+//                                 სურათი
+//                                 {!isEditMode && (
+//                                   <span className="text-red-500">*</span>
+//                                 )}
+//                                 {isEditMode && (
+//                                   <span className="text-xs text-muted-foreground ml-2">
+//                                     (არჩევითი - არ შეცვალოთ არსებული სურათი)
+//                                   </span>
+//                                 )}
 //                               </FormLabel>
 //                               <FormControl>
 //                                 <div className="space-y-4">
@@ -380,9 +626,29 @@
 //                             {saving && (
 //                               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
 //                             )}
-//                             <Plus className="mr-2 h-4 w-4" />
-//                             {saving ? "მიმდინარეობს..." : "სლაიდის შექმნა"}
+//                             {isEditMode ? (
+//                               <>
+//                                 <Pencil className="mr-2 h-4 w-4" />
+//                                 {saving ? "მიმდინარეობს..." : "განახლება"}
+//                               </>
+//                             ) : (
+//                               <>
+//                                 <Plus className="mr-2 h-4 w-4" />
+//                                 {saving ? "მიმდინარეობს..." : "სლაიდის შექმნა"}
+//                               </>
+//                             )}
 //                           </Button>
+//                           {isEditMode && (
+//                             <Button
+//                               type="button"
+//                               variant="outline"
+//                               onClick={handleCancelEdit}
+//                               disabled={saving}
+//                             >
+//                               <X className="mr-2 h-4 w-4" />
+//                               გაუქმება
+//                             </Button>
+//                           )}
 //                           <Button
 //                             type="button"
 //                             variant="outline"
@@ -399,15 +665,228 @@
 //                     </Form>
 //                   </CardContent>
 //                 </Card>
-//               </section>
+//               </div>
+
+//               {/* სლაიდების ცხრილი */}
+//               <div>
+//                 <div className="mb-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+//                   <div>
+//                     <h2 className="text-2xl font-bold">არსებული სლაიდები</h2>
+//                     <p className="text-muted-foreground">
+//                       სულ: {slides.length} სლაიდი
+//                       {searchQuery &&
+//                         ` • ნაპოვნია: ${filteredAndSortedSlides.length}`}
+//                     </p>
+//                   </div>
+//                   <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+//                     <div className="relative flex-1 md:w-[300px]">
+//                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+//                       <Input
+//                         placeholder="ძებნა სათაურით ან აღწერით..."
+//                         value={searchQuery}
+//                         onChange={(e) => setSearchQuery(e.target.value)}
+//                         className="pl-10"
+//                       />
+//                     </div>
+//                     <Button
+//                       variant="outline"
+//                       size="sm"
+//                       onClick={fetchSlides}
+//                       disabled={loading}
+//                     >
+//                       {loading ? (
+//                         <Loader2 className="h-4 w-4 animate-spin" />
+//                       ) : (
+//                         "განახლება"
+//                       )}
+//                     </Button>
+//                   </div>
+//                 </div>
+//                 <Card>
+//                   <CardContent className="p-0">
+//                     {loading ? (
+//                       <div className="flex justify-center items-center py-12">
+//                         <Loader2 className="h-8 w-8 animate-spin" />
+//                       </div>
+//                     ) : slides.length === 0 ? (
+//                       <div className="text-center py-12 text-muted-foreground">
+//                         სლაიდები ვერ მოიძებნა
+//                       </div>
+//                     ) : filteredAndSortedSlides.length === 0 ? (
+//                       <div className="text-center py-12">
+//                         <Search className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+//                         <p className="text-muted-foreground">
+//                           "{searchQuery}" - ძებნის შედეგები არ მოიძებნა
+//                         </p>
+//                         <Button
+//                           variant="outline"
+//                           size="sm"
+//                           className="mt-4"
+//                           onClick={() => setSearchQuery("")}
+//                         >
+//                           გასუფთავება
+//                         </Button>
+//                       </div>
+//                     ) : (
+//                       <Table>
+//                         <TableHeader>
+//                           <TableRow>
+//                             <TableHead className="w-[100px]">სურათი</TableHead>
+//                             <TableHead>
+//                               <button
+//                                 onClick={() => handleSort("title")}
+//                                 className="flex items-center hover:text-foreground transition-colors font-medium"
+//                               >
+//                                 სათაური
+//                                 <SortIcon field="title" />
+//                               </button>
+//                             </TableHead>
+//                             <TableHead className="hidden lg:table-cell">
+//                               აღწერა
+//                             </TableHead>
+//                             <TableHead className="hidden md:table-cell">
+//                               <button
+//                                 onClick={() => handleSort("createdAt")}
+//                                 className="flex items-center hover:text-foreground transition-colors font-medium"
+//                               >
+//                                 შექმნილია
+//                                 <SortIcon field="createdAt" />
+//                               </button>
+//                             </TableHead>
+//                             <TableHead className="hidden md:table-cell">
+//                               <button
+//                                 onClick={() => handleSort("updatedAt")}
+//                                 className="flex items-center hover:text-foreground transition-colors font-medium"
+//                               >
+//                                 განახლდა
+//                                 <SortIcon field="updatedAt" />
+//                               </button>
+//                             </TableHead>
+//                             <TableHead className="text-right">
+//                               მოქმედებები
+//                             </TableHead>
+//                           </TableRow>
+//                         </TableHeader>
+//                         <TableBody>
+//                           {filteredAndSortedSlides.map((slide) => (
+//                             <TableRow
+//                               key={slide.id}
+//                               className={`group hover:bg-muted/50 ${
+//                                 isEditMode && editingSlide?.id === slide.id
+//                                   ? "bg-primary/5 border-l-4 border-primary"
+//                                   : ""
+//                               }`}
+//                             >
+//                               <TableCell>
+//                                 <div className="relative">
+//                                   <img
+//                                     src={slide.src}
+//                                     alt={slide.title.en}
+//                                     className="w-16 h-16 object-cover rounded-lg shadow-sm group-hover:shadow-md transition-shadow"
+//                                   />
+//                                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 rounded-lg transition-colors" />
+//                                 </div>
+//                               </TableCell>
+//                               <TableCell className="font-medium">
+//                                 <div className="space-y-1">
+//                                   <div className="max-w-[200px] truncate font-medium">
+//                                     {slide.title.en}
+//                                   </div>
+//                                   <div className="max-w-[200px] truncate text-sm text-muted-foreground">
+//                                     {slide.title.ka}
+//                                   </div>
+//                                 </div>
+//                               </TableCell>
+//                               <TableCell className="hidden lg:table-cell">
+//                                 <div className="space-y-1">
+//                                   <div className="max-w-[200px] truncate text-sm">
+//                                     {slide.description.en || "-"}
+//                                   </div>
+//                                   <div className="max-w-[200px] truncate text-xs text-muted-foreground">
+//                                     {slide.description.ka || "-"}
+//                                   </div>
+//                                 </div>
+//                               </TableCell>
+//                               <TableCell className="hidden md:table-cell">
+//                                 <div className="flex items-center gap-2">
+//                                   <div className="w-2 h-2 rounded-full bg-green-500" />
+//                                   <span className="text-sm text-muted-foreground">
+//                                     {formatDate(slide.createdAt)}
+//                                   </span>
+//                                 </div>
+//                               </TableCell>
+//                               <TableCell className="hidden md:table-cell">
+//                                 <div className="flex items-center gap-2">
+//                                   <div className="w-2 h-2 rounded-full bg-blue-500" />
+//                                   <span className="text-sm text-muted-foreground">
+//                                     {formatDate(slide.updatedAt)}
+//                                   </span>
+//                                 </div>
+//                               </TableCell>
+//                               <TableCell className="text-right">
+//                                 <div className="flex items-center justify-end gap-2">
+//                                   <Button
+//                                     variant="ghost"
+//                                     size="sm"
+//                                     onClick={() => handleEdit(slide)}
+//                                     disabled={deleting || isEditMode}
+//                                     className="hover:bg-primary/10 hover:text-primary transition-colors"
+//                                   >
+//                                     <Pencil className="h-4 w-4" />
+//                                   </Button>
+//                                   <Button
+//                                     variant="ghost"
+//                                     size="sm"
+//                                     onClick={() => setDeleteId(slide.id)}
+//                                     disabled={deleting || isEditMode}
+//                                     className="hover:bg-destructive/10 hover:text-destructive transition-colors"
+//                                   >
+//                                     <Trash2 className="h-4 w-4" />
+//                                   </Button>
+//                                 </div>
+//                               </TableCell>
+//                             </TableRow>
+//                           ))}
+//                         </TableBody>
+//                       </Table>
+//                     )}
+//                   </CardContent>
+//                 </Card>
+//               </div>
 //             </div>
 //           </main>
 //         </div>
 //       </div>
+
+//       {/* Delete Confirmation Dialog */}
+//       <AlertDialog
+//         open={deleteId !== null}
+//         onOpenChange={() => setDeleteId(null)}
+//       >
+//         <AlertDialogContent>
+//           <AlertDialogHeader>
+//             <AlertDialogTitle>დარწმუნებული ხართ?</AlertDialogTitle>
+//             <AlertDialogDescription>
+//               ეს მოქმედება შეუქცევადია. სლაიდი სამუდამოდ წაიშლება მონაცემთა
+//               ბაზიდან.
+//             </AlertDialogDescription>
+//           </AlertDialogHeader>
+//           <AlertDialogFooter>
+//             <AlertDialogCancel disabled={deleting}>გაუქმება</AlertDialogCancel>
+//             <AlertDialogAction
+//               onClick={() => deleteId && handleDelete(deleteId)}
+//               disabled={deleting}
+//               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+//             >
+//               {deleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+//               წაშლა
+//             </AlertDialogAction>
+//           </AlertDialogFooter>
+//         </AlertDialogContent>
+//       </AlertDialog>
 //     </SidebarProvider>
 //   );
 // }
-
 "use client";
 
 import type React from "react";
@@ -416,7 +895,7 @@ import { AdminHeader } from "@/components/admin-header";
 import { SidebarProvider } from "@/components/sidebar-provider";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import {
   Plus,
   Loader2,
@@ -429,6 +908,9 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
+  TrendingUp,
+  BarChart3,
+  Calendar,
 } from "lucide-react";
 import {
   createSlide,
@@ -468,6 +950,26 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 const englishRegex = /^[A-Za-z0-9\s.,!?'-]*$/;
 const georgianRegex = /^[ა-ჰ0-9\s.,!?'-]*$/;
@@ -732,6 +1234,79 @@ export default function DashboardPage() {
     );
   };
 
+  // Analytics Data
+  const getAnalyticsData = () => {
+    const now = new Date();
+    const last7Days = new Array(7).fill(0).map((_, i) => {
+      const date = new Date(now);
+      date.setDate(date.getDate() - (6 - i));
+      return {
+        date: date.toLocaleDateString("ka-GE", {
+          month: "short",
+          day: "numeric",
+        }),
+        count: 0,
+      };
+    });
+
+    slides.forEach((slide) => {
+      if (slide.createdAt) {
+        const createdDate = new Date(slide.createdAt);
+        const daysDiff = Math.floor(
+          (now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24)
+        );
+        if (daysDiff >= 0 && daysDiff < 7) {
+          last7Days[6 - daysDiff].count++;
+        }
+      }
+    });
+
+    const totalSlides = slides.length;
+    const last24h = slides.filter((s) => {
+      if (!s.createdAt) return false;
+      const diff = now.getTime() - new Date(s.createdAt).getTime();
+      return diff < 24 * 60 * 60 * 1000;
+    }).length;
+
+    const last7DaysCount = slides.filter((s) => {
+      if (!s.createdAt) return false;
+      const diff = now.getTime() - new Date(s.createdAt).getTime();
+      return diff < 7 * 24 * 60 * 60 * 1000;
+    }).length;
+
+    const withDescription = slides.filter(
+      (s) => s.description.en || s.description.ka
+    ).length;
+    const withoutDescription = totalSlides - withDescription;
+
+    return {
+      chartData: last7Days,
+      stats: {
+        total: totalSlides,
+        last24h,
+        last7Days: last7DaysCount,
+        withDescription,
+        withoutDescription,
+      },
+    };
+  };
+
+  const analytics = getAnalyticsData();
+  const COLORS = ["#3b82f6", "#8b5cf6", "#ec4899", "#f59e0b"];
+
+  const pieData = [
+    {
+      name: "აღწერით",
+      value: analytics.stats.withDescription,
+      color: COLORS[0],
+    },
+    {
+      name: "აღწერის გარეშე",
+      value: analytics.stats.withoutDescription,
+      color: COLORS[1],
+    },
+  ];
+
   const onSubmit = async (values: FormValues) => {
     console.log("=== 🚀 Form Submit START ===");
     setSaving(true);
@@ -834,6 +1409,183 @@ export default function DashboardPage() {
           <AdminHeader />
           <main className="flex-1 overflow-y-auto">
             <div className="p-8 space-y-8">
+              {/* Analytics Dashboard */}
+              <div className="space-y-6">
+                <div>
+                  <h1 className="text-3xl font-bold">Dashboard</h1>
+                  <p className="text-muted-foreground">
+                    სლაიდების სტატისტიკა და ანალიტიკა
+                  </p>
+                </div>
+
+                {/* Stats Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <Card className="border-l-4 border-l-blue-500 hover:shadow-lg transition-shadow">
+                    <CardHeader className="pb-3">
+                      <CardDescription className="flex items-center gap-2">
+                        <BarChart3 className="h-4 w-4" />
+                        სულ სლაიდები
+                      </CardDescription>
+                      <CardTitle className="text-4xl font-bold">
+                        {analytics.stats.total}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground">
+                        მთლიანი რაოდენობა
+                      </p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-l-4 border-l-green-500 hover:shadow-lg transition-shadow">
+                    <CardHeader className="pb-3">
+                      <CardDescription className="flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4" />
+                        ბოლო 24 საათი
+                      </CardDescription>
+                      <CardTitle className="text-4xl font-bold">
+                        {analytics.stats.last24h}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-green-600 font-medium">
+                          +{analytics.stats.last24h}
+                        </span>
+                        <p className="text-sm text-muted-foreground">
+                          ახალი სლაიდი
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-l-4 border-l-purple-500 hover:shadow-lg transition-shadow">
+                    <CardHeader className="pb-3">
+                      <CardDescription className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4" />
+                        ბოლო 7 დღე
+                      </CardDescription>
+                      <CardTitle className="text-4xl font-bold">
+                        {analytics.stats.last7Days}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground">
+                        კვირის სტატისტიკა
+                      </p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-l-4 border-l-orange-500 hover:shadow-lg transition-shadow">
+                    <CardHeader className="pb-3">
+                      <CardDescription>აღწერით</CardDescription>
+                      <CardTitle className="text-4xl font-bold">
+                        {analytics.stats.withDescription}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground">
+                        {analytics.stats.total > 0
+                          ? `${Math.round(
+                              (analytics.stats.withDescription /
+                                analytics.stats.total) *
+                                100
+                            )}%`
+                          : "0%"}{" "}
+                        სრული ინფორმაციით
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Charts */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <Card className="hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <BarChart3 className="h-5 w-5 text-primary" />
+                        ბოლო 7 დღის აქტივობა
+                      </CardTitle>
+                      <CardDescription>
+                        დღიური სლაიდების დამატება
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={analytics.chartData}>
+                          <CartesianGrid
+                            strokeDasharray="3 3"
+                            className="stroke-muted"
+                          />
+                          <XAxis
+                            dataKey="date"
+                            className="text-xs"
+                            tick={{ fill: "hsl(var(--muted-foreground))" }}
+                          />
+                          <YAxis
+                            className="text-xs"
+                            tick={{ fill: "hsl(var(--muted-foreground))" }}
+                          />
+                          <Tooltip
+                            contentStyle={{
+                              backgroundColor: "hsl(var(--card))",
+                              border: "1px solid hsl(var(--border))",
+                              borderRadius: "8px",
+                            }}
+                          />
+                          <Bar
+                            dataKey="count"
+                            fill="hsl(var(--primary))"
+                            radius={[8, 8, 0, 0]}
+                            className="hover:opacity-80 transition-opacity"
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <TrendingUp className="h-5 w-5 text-primary" />
+                        კონტენტის სრულყოფა
+                      </CardTitle>
+                      <CardDescription>აღწერის სტატისტიკა</CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex items-center justify-center">
+                      <ResponsiveContainer width="100%" height={300}>
+                        <PieChart>
+                          <Pie
+                            data={pieData}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={({ name, percent }) =>
+                              `${name}: ${(percent * 100).toFixed(0)}%`
+                            }
+                            outerRadius={80}
+                            fill="#8884d8"
+                            dataKey="value"
+                          >
+                            {pieData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip
+                            contentStyle={{
+                              backgroundColor: "hsl(var(--card))",
+                              border: "1px solid hsl(var(--border))",
+                              borderRadius: "8px",
+                            }}
+                          />
+                          <Legend />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+
               {/* ახალი სლაიდის დამატება */}
               <div>
                 <div className="mb-8">
