@@ -12,7 +12,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { ModeToggle } from "@/components/ModeToggle";
 
 export function Header() {
   return (
@@ -31,7 +30,6 @@ export function Header() {
           </div>
         </form>
       </div>
-      <ModeToggle />
       <Button variant="ghost" size="icon" className="relative">
         <Bell className="h-5 w-5" />
         <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-primary" />

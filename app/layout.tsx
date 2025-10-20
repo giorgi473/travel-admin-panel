@@ -35,23 +35,23 @@ export default function RootLayout({
         <link rel="icon" href="/logo/logo.svg" sizes="any" />
       </head>
       <body className={`font-georgian antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <SidebarProvider>
-            <div className="flex min-h-screen w-full">
-              <AppSidebar />
-              <div className="flex flex-1 flex-col">
-                <Header />
+        <SidebarProvider>
+          <div className="flex min-h-screen w-full">
+            <AppSidebar />
+            <div className="flex flex-1 flex-col">
+              <Header />
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="system"
+                enableSystem
+                disableTransitionOnChange
+              >
                 <main className="flex-1">{children}</main>
-              </div>
+              </ThemeProvider>
             </div>
-          </SidebarProvider>
-          <Analytics />
-        </ThemeProvider>
+          </div>
+        </SidebarProvider>
+        <Analytics />
       </body>
     </html>
   );
