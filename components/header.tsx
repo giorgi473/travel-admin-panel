@@ -12,10 +12,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { ModeToggle } from "./ModeToggle";
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 lg:px-6">
+    <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-2 lg:px-2">
       <SidebarTrigger />
 
       <div className="flex-1">
@@ -30,7 +31,7 @@ export function Header() {
           </div>
         </form>
       </div>
-
+      <ModeToggle />
       <Button variant="ghost" size="icon" className="relative">
         <Bell className="h-5 w-5" />
         <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-primary" />
