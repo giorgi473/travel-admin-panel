@@ -2015,7 +2015,7 @@ export default function DashboardPage() {
                 className="pl-10"
               />
             </div>
-            
+
             <Button
               variant="outline"
               size="sm"
