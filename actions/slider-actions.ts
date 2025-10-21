@@ -1,6 +1,6 @@
 "use server";
 
-const API_URL = "https://travel-api-25.netlify.app/api/v1/sliders";
+const API_URL = "https://nest-travel-api.vercel.app/api/v1/sliders";
 
 interface SlideData {
   src: string;

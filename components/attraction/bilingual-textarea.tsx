@@ -48,6 +48,8 @@ export function BilingualTextarea({
               <Textarea
                 placeholder={placeholderEn}
                 rows={rows}
+                className="resize-none"
+                style={{ resize: "none" }}
                 value={(field.value as string) || ""}
                 onChange={(e) => {
                   const transliterated = transliterateToEnglish(e.target.value);
@@ -72,6 +74,8 @@ export function BilingualTextarea({
               <Textarea
                 placeholder={placeholderKa}
                 rows={rows}
+                className="resize-none"
+                style={{ resize: "none" }}
                 value={(field.value as string) || ""}
                 onChange={(e) => {
                   const transliterated = transliterateToGeorgian(
