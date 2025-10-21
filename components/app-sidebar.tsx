@@ -47,7 +47,7 @@ const menuItems = [
     url: "/analytics",
     items: [
       { title: "Slide", url: "/slide" },
-      { title: "Conversions", url: "/analytics#conversions" },
+      { title: "Attractions", url: "/attractions" },
       { title: "Revenue", url: "/analytics#revenue" },
     ],
   },
@@ -159,7 +159,6 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-
         <SidebarGroup className="mt-auto">
           <SidebarGroupLabel>Configuration</SidebarGroupLabel>
           <SidebarGroupContent>
