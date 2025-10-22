@@ -113,131 +113,211 @@
 //     </div>
 //   );
 // }
+
+// -----------------------------------
+
 "use client";
 
-import type React from "react";
-
 import { useState } from "react";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Upload, X } from "lucide-react";
-import Image from "next/image";
+import { Upload } from "lucide-react";
 
 interface ImageUploadProps {
   label: string;
-  value?: string;
+  value: string;
   onChange: (value: string) => void;
 }
 
 export function ImageUpload({ label, value, onChange }: ImageUploadProps) {
-  const [isUrlMode, setIsUrlMode] = useState(false);
-  const [urlInput, setUrlInput] = useState("");
+  const [preview, setPreview] = useState<string | null>(value || null);
+  const [loading, setLoading] = useState(false);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      // Create a local URL for the uploaded file
-      const fileUrl = URL.createObjectURL(file);
-      onChange(fileUrl);
-    }
-  };
+    if (!file) return;
 
-  const handleUrlSubmit = () => {
-    if (urlInput.trim()) {
-      onChange(urlInput.trim());
-      setUrlInput("");
-      setIsUrlMode(false);
-    }
-  };
-
-  const handleRemove = () => {
-    onChange("");
+    setLoading(true);
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const base64 = ev.target?.result as string;
+      onChange(base64); // base64 URL (data:image/... )
+      setPreview(base64);
+      setLoading(false);
+    };
+    reader.onerror = () => {
+      setLoading(false);
+      alert("შეცდომა სურათის წაკითხვაში");
+    };
+    reader.readAsDataURL(file);
   };
 
   return (
     <div className="space-y-2">
-      <Label>{label}</Label>
-
-      {value ? (
-        <div className="relative border rounded-lg overflow-hidden">
-          <div className="relative aspect-video w-full bg-muted">
-            <Image
-              src={value || "/placeholder.svg"}
-              alt={label}
-              fill
-              className="object-cover"
-              unoptimized
-            />
-          </div>
+      <label className="text-sm font-medium">{label}</label>
+      {preview && (
+        <div className="relative">
+          <img
+            src={preview}
+            alt="Preview"
+            className="w-full h-32 object-cover rounded-md border"
+          />
           <Button
             type="button"
-            variant="destructive"
+            variant="ghost"
             size="sm"
             className="absolute top-2 right-2"
-            onClick={handleRemove}
+            onClick={() => {
+              onChange("");
+              setPreview(null);
+            }}
           >
-            <X className="w-4 h-4" />
+            Remove
           </Button>
         </div>
-      ) : (
-        <div className="space-y-2">
-          {!isUrlMode ? (
-            <div className="flex gap-2">
-              <div className="flex-1">
-                <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="cursor-pointer"
-                />
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsUrlMode(true)}
-              >
-                Use URL
-              </Button>
-            </div>
-          ) : (
-            <div className="flex gap-2">
-              <Input
-                type="url"
-                placeholder="Enter image URL"
-                value={urlInput}
-                onChange={(e) => setUrlInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleUrlSubmit();
-                  }
-                }}
-              />
-              <Button type="button" onClick={handleUrlSubmit}>
-                Add
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setIsUrlMode(false);
-                  setUrlInput("");
-                }}
-              >
-                Cancel
-              </Button>
-            </div>
-          )}
-
-          <div className="border-2 border-dashed rounded-lg p-8 text-center bg-muted/50">
-            <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">
-              Upload an image or provide a URL
-            </p>
-          </div>
-        </div>
       )}
+      <div className="flex items-center gap-2">
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          className="hidden"
+          id={`file-${label}`}
+        />
+        <label
+          htmlFor={`file-${label}`}
+          className="cursor-pointer flex-1 border rounded-md p-2 text-center bg-muted hover:bg-accent"
+        >
+          {loading ? "Loading..." : <Upload className="w-4 h-4 mx-auto" />}
+        </label>
+      </div>
     </div>
   );
 }
+// "use client";
+
+// import React from "react";
+
+// import { useState } from "react";
+// import { Label } from "@/components/ui/label";
+// import { Input } from "@/components/ui/input";
+// import { Button } from "@/components/ui/button";
+// import { Upload, X } from "lucide-react";
+// import Image from "next/image";
+
+// interface ImageUploadProps {
+//   label: string;
+//   value?: string;
+//   onChange: (value: string) => void;
+// }
+
+// export function ImageUpload({ label, value, onChange }: ImageUploadProps) {
+//   const [isUrlMode, setIsUrlMode] = useState(false);
+//   const [urlInput, setUrlInput] = useState("");
+
+//   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+//     const file = e.target.files?.[0];
+//     if (file) {
+//       // Create a local URL for the uploaded file
+//       const fileUrl = URL.createObjectURL(file);
+//       onChange(fileUrl);
+//     }
+//   };
+
+//   const handleUrlSubmit = () => {
+//     if (urlInput.trim()) {
+//       onChange(urlInput.trim());
+//       setUrlInput("");
+//       setIsUrlMode(false);
+//     }
+//   };
+
+//   const handleRemove = () => {
+//     onChange("");
+//   };
+
+//   return (
+//     <div className="space-y-2">
+//       <Label>{label}</Label>
+
+//       {value ? (
+//         <div className="relative border rounded-lg overflow-hidden">
+//           <div className="relative aspect-video w-full bg-muted">
+//             <Image
+//               src={value || "/placeholder.svg"}
+//               alt={label}
+//               fill
+//               className="object-cover"
+//               unoptimized
+//             />
+//           </div>
+//           <Button
+//             type="button"
+//             variant="destructive"
+//             size="sm"
+//             className="absolute top-2 right-2"
+//             onClick={handleRemove}
+//           >
+//             <X className="w-4 h-4" />
+//           </Button>
+//         </div>
+//       ) : (
+//         <div className="space-y-2">
+//           {!isUrlMode ? (
+//             <div className="flex gap-2">
+//               <div className="flex-1">
+//                 <Input
+//                   type="file"
+//                   accept="image/*"
+//                   onChange={handleFileChange}
+//                   className="cursor-pointer"
+//                 />
+//               </div>
+//               <Button
+//                 type="button"
+//                 variant="outline"
+//                 onClick={() => setIsUrlMode(true)}
+//               >
+//                 Use URL
+//               </Button>
+//             </div>
+//           ) : (
+//             <div className="flex gap-2">
+//               <Input
+//                 type="url"
+//                 placeholder="Enter image URL"
+//                 value={urlInput}
+//                 onChange={(e) => setUrlInput(e.target.value)}
+//                 onKeyDown={(e) => {
+//                   if (e.key === "Enter") {
+//                     e.preventDefault();
+//                     handleUrlSubmit();
+//                   }
+//                 }}
+//               />
+//               <Button type="button" onClick={handleUrlSubmit}>
+//                 Add
+//               </Button>
+//               <Button
+//                 type="button"
+//                 variant="outline"
+//                 onClick={() => {
+//                   setIsUrlMode(false);
+//                   setUrlInput("");
+//                 }}
+//               >
+//                 Cancel
+//               </Button>
+//             </div>
+//           )}
+
+//           <div className="border-2 border-dashed rounded-lg p-8 text-center bg-muted/50">
+//             <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+//             <p className="text-sm text-muted-foreground">
+//               Upload an image or provide a URL
+//             </p>
+//           </div>
+//         </div>
+//       )}
+//     </div>
+//   );
+// }

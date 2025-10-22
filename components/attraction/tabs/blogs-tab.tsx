@@ -102,6 +102,17 @@ export function BlogsTab({
 
                 <BilingualTextarea
                   control={control}
+                  nameEn={`blogs.${index}.blogText.en`}
+                  nameKa={`blogs.${index}.blogText.ka`}
+                  labelEn="Blog Text (Optional, English)"
+                  labelKa="ბლოგის ტექსტი (ოპციური, ქართულად)"
+                  placeholderEn="Optional blog text"
+                  placeholderKa="ოპციური ბლოგის ტექსტი"
+                  rows={4}
+                />
+
+                <BilingualTextarea
+                  control={control}
                   nameEn={`blogs.${index}.desc.en`}
                   nameKa={`blogs.${index}.desc.ka`}
                   labelEn="Description (English)"
