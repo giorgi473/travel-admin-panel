@@ -21,6 +21,7 @@
 
 //   const form = useForm<AttractionFormData>({
 //     resolver: zodResolver(attractionSchema),
+//     mode: "onSubmit",
 //     defaultValues: {
 //       title: { en: "", ka: "" },
 //       src: "",
@@ -80,11 +81,28 @@
 //   const onSubmit = async (data: AttractionFormData) => {
 //     setIsSubmitting(true);
 //     try {
-//       console.log("[v0] Form data:", data);
-//       // await createAttraction(data); // აქ დაამატე ბაზის API კოლი
+//       const response = await fetch(
+//         "https://nest-travel-api.vercel.app/api/v1/slider/destination",
+//         {
+//           method: "POST",
+//           headers: {
+//             "Content-Type": "application/json",
+//           },
+//           body: JSON.stringify(data),
+//         }
+//       );
+
+//       if (!response.ok) {
+//         throw new Error(`HTTP error! status: ${response.status}`);
+//       }
+
+//       const result = await response.json();
+//       console.log("[Frontend] Created successfully:", result);
 //       form.reset();
-//     } catch (error) {
-//       console.error("[v0] Error:", error);
+//       alert("Attraction შექმნილია წარმატებით!");
+//     } catch (error: any) {
+//       console.error("[Frontend] Error:", error);
+//       alert("შეცდომა მონაცემების შენახვისას: " + error.message);
 //     } finally {
 //       setIsSubmitting(false);
 //     }
@@ -181,6 +199,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Form } from "@/components/ui/form";
+import { toast, Toaster } from "sonner"; // დაამატებული Sonner-ისთვის
 import {
   attractionSchema,
   type AttractionFormData,
@@ -256,9 +275,8 @@ export default function CreateAttractionPage() {
   const onSubmit = async (data: AttractionFormData) => {
     setIsSubmitting(true);
     try {
-      // Backend URL – შეცვალე თუ backend ცალკეა (მაგ. http://localhost:3001/api/slider/destination)
       const response = await fetch(
-        "https://nest-travel-api.vercel.app/api/v1/slider/destination",
+        `https://nest-travel-api.vercel.app/api/v1/slider/destination`,
         {
           method: "POST",
           headers: {
@@ -269,16 +287,21 @@ export default function CreateAttractionPage() {
       );
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.text();
+        throw new Error(
+          `HTTP error! status: ${response.status} – ${errorData}`
+        );
       }
 
       const result = await response.json();
       console.log("[Frontend] Created successfully:", result);
       form.reset();
-      alert("Attraction შექმნილია წარმატებით!");
-    } catch (error: any) {
+      toast.success("Attraction შექმნილია წარმატებით!"); // Sonner toast წარმატებისთვის
+    } catch (error) {
       console.error("[Frontend] Error:", error);
-      alert("შეცდომა მონაცემების შენახვისას: " + error.message);
+      toast.error(
+        "შეცდომა მონაცემების შენახვისას: " + (error as Error).message
+      ); // Sonner toast შეცდომისთვის
     } finally {
       setIsSubmitting(false);
     }
@@ -364,6 +387,7 @@ export default function CreateAttractionPage() {
           </form>
         </Form>
       </div>
+      <Toaster /> {/* დაამატებული Sonner Toaster */}
     </div>
   );
 }
