@@ -257,13 +257,16 @@ export default function CreateAttractionPage() {
     setIsSubmitting(true);
     try {
       // Backend URL – შეცვალე თუ backend ცალკეა (მაგ. http://localhost:3001/api/slider/destination)
-      const response = await fetch("/api/slider/destination", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
+      const response = await fetch(
+        "https://nest-travel-api.vercel.app/api/v1/slider/destination",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
