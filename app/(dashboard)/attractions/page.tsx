@@ -359,7 +359,7 @@ export default function CreateAttractionPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto p-4 md:p-6 lg:p-8 space-y-8">
+      <div className="mx-auto p-2 md:p-2 lg:p-2 space-y-8">
         <div className="space-y-2">
           <h1 className="text-4xl font-bold tracking-tight">
             {editingId ? "Edit Attraction" : "Create Attraction"}
