@@ -35,7 +35,7 @@
 //     <div className="space-y-4">
 //       <div className="flex items-center gap-2 text-sm font-medium">
 //         <Clock className="w-4 h-4" />
-//         <span>Working Hours</span>
+//         <span>Working Hours (Optional)</span>
 //       </div>
 //       <div className="grid md:grid-cols-2 gap-4">
 //         {days.map((day) => (
@@ -76,7 +76,7 @@ import {
 } from "@/components/ui/form";
 import type { Control } from "react-hook-form";
 import { Clock } from "lucide-react";
-import { AttractionFormData } from "@/lib/schemas/attraction-schema";
+import type { AttractionFormData } from "@/lib/schemas/attraction-schema";
 
 interface WorkingHoursSectionProps {
   control: Control<AttractionFormData>;

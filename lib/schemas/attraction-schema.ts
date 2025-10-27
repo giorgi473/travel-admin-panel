@@ -16,14 +16,25 @@
 //     .regex(georgianRegex, "Only Georgian characters allowed"),
 // });
 
+// export const optionalBilingualTextSchema = z.object({
+//   en: z
+//     .string()
+//     .regex(englishRegex, "Only English characters allowed")
+//     .optional(),
+//   ka: z
+//     .string()
+//     .regex(georgianRegex, "Only Georgian characters allowed")
+//     .optional(),
+// });
+
 // export const workingHoursSchema = z.object({
-//   Monday: z.string(),
-//   Tuesday: z.string(),
-//   Wednesday: z.string(),
-//   Thursday: z.string(),
-//   Friday: z.string(),
-//   Saturday: z.string(),
-//   Sunday: z.string(),
+//   Monday: z.string().optional(),
+//   Tuesday: z.string().optional(),
+//   Wednesday: z.string().optional(),
+//   Thursday: z.string().optional(),
+//   Friday: z.string().optional(),
+//   Saturday: z.string().optional(),
+//   Sunday: z.string().optional(),
 // });
 
 // export const slideCardSchema = z.object({
@@ -31,20 +42,20 @@
 //   src: z.string().min(1, "Image is required"),
 //   modalSrc: z.string().min(1, "Modal image is required"),
 //   additionalDescription: bilingualTextSchema,
-//   text: bilingualTextSchema.optional(),
+//   text: optionalBilingualTextSchema.optional(),
 //   region: bilingualTextSchema,
 //   city: bilingualTextSchema,
 //   name: bilingualTextSchema,
-//   address: z.string().min(1, "Address is required"),
-//   phone: z.string().min(1, "Phone is required"),
-//   website: z.string().url("Must be a valid URL"),
-//   workingHours: workingHoursSchema,
+//   address: z.string().optional(),
+//   phone: z.string().optional(),
+//   website: z.string().url("Must be a valid URL").optional(),
+//   workingHours: workingHoursSchema.optional(),
 // });
 
 // export const blogSchema = z.object({
 //   img: z.string().min(1, "Image is required"),
 //   title: bilingualTextSchema,
-//   blogText: bilingualTextSchema.optional(),
+//   blogText: optionalBilingualTextSchema.optional(),
 //   desc: bilingualTextSchema,
 // });
 
@@ -57,21 +68,21 @@
 //   city: bilingualTextSchema,
 //   description: bilingualTextSchema,
 //   name: bilingualTextSchema,
-//   address: z.string().min(1, "Address is required"),
-//   phone: z.string().min(1, "Phone is required"),
-//   website: z.string().url("Must be a valid URL"),
-//   workingHours: workingHoursSchema,
+//   address: z.string().optional(),
+//   phone: z.string().optional(),
+//   website: z.string().url("Must be a valid URL").optional(),
+//   workingHours: workingHoursSchema.optional(),
 //   anotherSection: z.object({
+//     image: z.string().optional(),
 //     name1: bilingualTextSchema,
 //     description: bilingualTextSchema,
-//     image: z.string().optional(),
 //     name2: bilingualTextSchema,
 //     description2: bilingualTextSchema,
-//     description3: bilingualTextSchema.optional(),
-//     name4: bilingualTextSchema.optional(),
-//     name5: bilingualTextSchema.optional(),
-//     description4: bilingualTextSchema.optional(),
-//     description5: bilingualTextSchema.optional(),
+//     description3: optionalBilingualTextSchema.optional(),
+//     name4: optionalBilingualTextSchema.optional(),
+//     name5: optionalBilingualTextSchema.optional(),
+//     description4: optionalBilingualTextSchema.optional(),
+//     description5: optionalBilingualTextSchema.optional(),
 //   }),
 //   slideCard: z.array(slideCardSchema),
 //   blogs: z.array(blogSchema),
@@ -100,21 +111,43 @@ export const optionalBilingualTextSchema = z.object({
   en: z
     .string()
     .regex(englishRegex, "Only English characters allowed")
-    .optional(),
+    .optional()
+    .or(z.literal("")),
   ka: z
     .string()
     .regex(georgianRegex, "Only Georgian characters allowed")
-    .optional(),
+    .optional()
+    .or(z.literal("")),
 });
 
 export const workingHoursSchema = z.object({
-  Monday: z.string().optional(),
-  Tuesday: z.string().optional(),
-  Wednesday: z.string().optional(),
-  Thursday: z.string().optional(),
-  Friday: z.string().optional(),
-  Saturday: z.string().optional(),
-  Sunday: z.string().optional(),
+  Monday: z.string().optional().or(z.literal("")),
+  Tuesday: z.string().optional().or(z.literal("")),
+  Wednesday: z.string().optional().or(z.literal("")),
+  Thursday: z.string().optional().or(z.literal("")),
+  Friday: z.string().optional().or(z.literal("")),
+  Saturday: z.string().optional().or(z.literal("")),
+  Sunday: z.string().optional().or(z.literal("")),
+});
+
+export const blogSchema = z.object({
+  img: z.string().min(1, "Image is required"),
+  title: bilingualTextSchema,
+  blogText: optionalBilingualTextSchema.optional(),
+  desc: bilingualTextSchema,
+});
+
+export const anotherSectionSchema = z.object({
+  image: z.string().optional().or(z.literal("")),
+  name1: bilingualTextSchema,
+  description: bilingualTextSchema,
+  name2: bilingualTextSchema,
+  description2: bilingualTextSchema,
+  description3: optionalBilingualTextSchema.optional(),
+  name4: optionalBilingualTextSchema.optional(),
+  name5: optionalBilingualTextSchema.optional(),
+  description4: optionalBilingualTextSchema.optional(),
+  description5: optionalBilingualTextSchema.optional(),
 });
 
 export const slideCardSchema = z.object({
@@ -126,17 +159,12 @@ export const slideCardSchema = z.object({
   region: bilingualTextSchema,
   city: bilingualTextSchema,
   name: bilingualTextSchema,
-  address: z.string().optional(),
-  phone: z.string().optional(),
-  website: z.string().url("Must be a valid URL").optional(),
+  address: z.string().optional().or(z.literal("")),
+  phone: z.string().optional().or(z.literal("")),
+  website: z.string().url("Must be a valid URL").optional().or(z.literal("")),
   workingHours: workingHoursSchema.optional(),
-});
-
-export const blogSchema = z.object({
-  img: z.string().min(1, "Image is required"),
-  title: bilingualTextSchema,
-  blogText: optionalBilingualTextSchema.optional(),
-  desc: bilingualTextSchema,
+  anotherSection: anotherSectionSchema.optional(),
+  blogs: z.array(blogSchema).optional(),
 });
 
 export const attractionSchema = z.object({
@@ -148,22 +176,11 @@ export const attractionSchema = z.object({
   city: bilingualTextSchema,
   description: bilingualTextSchema,
   name: bilingualTextSchema,
-  address: z.string().optional(),
-  phone: z.string().optional(),
-  website: z.string().url("Must be a valid URL").optional(),
+  address: z.string().optional().or(z.literal("")),
+  phone: z.string().optional().or(z.literal("")),
+  website: z.string().url("Must be a valid URL").optional().or(z.literal("")),
   workingHours: workingHoursSchema.optional(),
-  anotherSection: z.object({
-    image: z.string().optional(),
-    name1: bilingualTextSchema,
-    description: bilingualTextSchema,
-    name2: bilingualTextSchema,
-    description2: bilingualTextSchema,
-    description3: optionalBilingualTextSchema.optional(),
-    name4: optionalBilingualTextSchema.optional(),
-    name5: optionalBilingualTextSchema.optional(),
-    description4: optionalBilingualTextSchema.optional(),
-    description5: optionalBilingualTextSchema.optional(),
-  }),
+  anotherSection: anotherSectionSchema,
   slideCard: z.array(slideCardSchema),
   blogs: z.array(blogSchema),
 });
