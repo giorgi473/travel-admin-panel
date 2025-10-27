@@ -33,9 +33,9 @@ export function GrowthTrendChart({ data }: GrowthTrendChartProps) {
               color: "hsl(0 72% 51%)",
             },
           }}
-          className="h-[280px]"
+          className="h-[280px] w-full"
         >
-          <AreaChart data={data}>
+          <AreaChart data={data} margin={{ left: 13, right: 5 }}>
             <defs>
               <linearGradient id="fillAttractions" x1="0" y1="0" x2="0" y2="1">
                 <stop
@@ -59,6 +59,7 @@ export function GrowthTrendChart({ data }: GrowthTrendChartProps) {
               tick={{ fill: "hsl(var(--muted-foreground))" }}
             />
             <YAxis
+              width={10}
               tickLine={false}
               axisLine={false}
               className="text-xs"

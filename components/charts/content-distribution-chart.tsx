@@ -35,9 +35,13 @@ export function ContentDistributionChart({
               color: "hsl(0 84% 60%)",
             },
           }}
-          className="h-[280px]"
+          className="h-[280px] w-full"
         >
-          <BarChart data={data} layout="vertical">
+          <BarChart
+            data={data}
+            layout="vertical"
+            margin={{ top: 5, right: 5, left: 29, bottom: 5 }}
+          >
             <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
             <XAxis
               type="number"
@@ -48,12 +52,12 @@ export function ContentDistributionChart({
             />
             <YAxis
               dataKey="name"
+              width={10}
               type="category"
               tickLine={false}
               axisLine={false}
               className="text-xs"
               tick={{ fill: "hsl(var(--muted-foreground))" }}
-              width={100}
             />
             <ChartTooltip content={<ChartTooltipContent />} />
             <Bar

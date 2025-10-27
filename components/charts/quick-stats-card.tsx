@@ -19,7 +19,7 @@ export function QuickStatsCard({ data }: QuickStatsCardProps) {
         </CardTitle>
         <CardDescription>Overview metrics</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-20">
         {data.map((stat, index) => (
           <div key={stat.name} className="space-y-2">
             <div className="flex items-center justify-between">
@@ -30,7 +30,7 @@ export function QuickStatsCard({ data }: QuickStatsCardProps) {
                 {stat.value}
               </span>
             </div>
-            {index < data.length - 1 && (
+            {index < data.length + 1 && (
               <div className="h-px bg-red-100 dark:bg-red-900" />
             )}
           </div>

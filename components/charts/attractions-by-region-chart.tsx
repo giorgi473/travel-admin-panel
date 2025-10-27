@@ -39,7 +39,7 @@ export function AttractionsByRegionChart({
         >
           <BarChart
             data={data}
-            margin={{ top: 5, right: 5, left: 0, bottom: 5 }}
+            margin={{ top: 5, right: 5, left: 13, bottom: 5 }}
           >
             <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
             <XAxis
@@ -50,6 +50,7 @@ export function AttractionsByRegionChart({
               tick={{ fill: "hsl(var(--muted-foreground))" }}
             />
             <YAxis
+              width={10}
               tickLine={false}
               axisLine={false}
               className="text-xs"
