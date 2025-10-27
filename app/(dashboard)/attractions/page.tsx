@@ -370,14 +370,12 @@ export default function CreateAttractionPage() {
               : "Add a new attraction with bilingual support"}
           </p>
         </div>
-
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <AttractionsByRegionChart data={chartData.byRegion} />
           <QuickStatsCard data={chartData.overview} />
           <GrowthTrendChart data={chartData.trend} />
           <ContentDistributionChart data={chartData.overview} />
         </div>
-
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <Tabs defaultValue="basic" className="w-full">
@@ -398,7 +396,6 @@ export default function CreateAttractionPage() {
                   Blogs
                 </TabsTrigger>
               </TabsList>
-
               <TabsContent value="basic" className="space-y-6 mt-6">
                 <BasicInfoTab control={form.control} />
                 <div className="mt-8">
@@ -420,7 +417,6 @@ export default function CreateAttractionPage() {
                   )}
                 </div>
               </TabsContent>
-
               <TabsContent value="contact" className="space-y-6 mt-6">
                 <ContactTab control={form.control} />
                 <div className="mt-8">
@@ -442,7 +438,6 @@ export default function CreateAttractionPage() {
                   )}
                 </div>
               </TabsContent>
-
               <TabsContent value="details" className="space-y-6 mt-6">
                 <DetailsTab control={form.control} />
                 <div className="mt-8">
@@ -464,7 +459,6 @@ export default function CreateAttractionPage() {
                   )}
                 </div>
               </TabsContent>
-
               <TabsContent value="slidecard" className="space-y-6 mt-6">
                 <SlideCardTab
                   control={form.control}
@@ -491,7 +485,6 @@ export default function CreateAttractionPage() {
                   )}
                 </div>
               </TabsContent>
-
               <TabsContent value="blogs" className="space-y-6 mt-6">
                 <BlogsTab
                   control={form.control}
@@ -517,7 +510,6 @@ export default function CreateAttractionPage() {
                 </div>
               </TabsContent>
             </Tabs>
-
             <div className="flex items-center justify-end gap-4 pt-6 border-t">
               <Button
                 type="button"
@@ -540,7 +532,6 @@ export default function CreateAttractionPage() {
             </div>
           </form>
         </Form>
-
         <AlertDialog
           open={deleteId !== null}
           onOpenChange={() => setDeleteId(null)}
