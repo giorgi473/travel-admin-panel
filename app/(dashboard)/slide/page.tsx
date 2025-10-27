@@ -602,7 +602,7 @@ export default function DashboardPage() {
                     dataKey="date"
                     tick={{ fontSize: 11, fill: "#6b7280" }}
                   />
-                  <YAxis tick={{ fontSize: 11, fill: "#6b7280" }} />
+                  <YAxis tick={{ fontSize: 11, fill: "#6b7280" }} width={10} />
                   <Tooltip
                     contentStyle={{
                       fontSize: 12,
