@@ -1089,7 +1089,6 @@ function SlideCardItem({
   console.log(`Child values for ${baseName}:`, childValues);
 
   const defaultSlideCard = {
-    id: Date.now().toString(), // Temporary ID for uniqueness
     title: { en: "", ka: "" },
     src: "",
     modalSrc: "",
@@ -1124,19 +1123,27 @@ function SlideCardItem({
     },
     blogs: [],
     childSlideCards: [],
-    parentSlideCardId: null, // For relations
-    destinationId: null, // For relations
+    parentSlideCardId: null,
+    destinationId: null,
   };
 
   const handleAppendChild = () => {
-    appendChild(defaultSlideCard);
+    // Extract parent ID from baseName for relations
+    const parentId = baseName.match(/slideCard\.(\d+)/)?.[1]
+      ? parseInt(baseName.match(/slideCard\.(\d+)/)![1])
+      : null;
+    const newChild = {
+      ...defaultSlideCard,
+      parentSlideCardId: parentId,
+    };
+    appendChild(newChild);
     setTimeout(() => {
       console.log("Full form after child append:", getValues());
     }, 0);
   };
 
   return (
-    <Card className="p-6">
+    <Card key={`${baseName}-${displayIndex}`} className="p-6">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-semibold">
           Place {displayIndex + 1} (Base: {baseName})
@@ -1535,12 +1542,10 @@ function SlideCardItem({
               size="sm"
               onClick={() =>
                 appendBlog({
-                  id: Date.now().toString(), // Add ID for blogs too
                   img: "",
                   title: { en: "", ka: "" },
                   blogText: { en: "", ka: "" },
                   desc: { en: "", ka: "" },
-                  slideCardId: null, // Relation
                 })
               }
             >
@@ -1714,7 +1719,6 @@ interface SlideCardTabProps {
 }
 
 const defaultSlideCard = {
-  id: Date.now().toString(),
   title: { en: "", ka: "" },
   src: "",
   modalSrc: "",
