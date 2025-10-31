@@ -45,7 +45,7 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   {
-    title: "Overview",
+    title: "Dashboard",
     icon: LayoutDashboard,
     url: "/dashboard",
   },
@@ -56,7 +56,7 @@ const menuItems: MenuItem[] = [
     items: [
       { title: "Slide", url: "/slide" },
       { title: "Attractions", url: "/attractions" },
-      { title: "Revenue", url: "/analytics/revenue" },
+      { title: "Tours", url: "/tours" },
     ],
   },
   {
