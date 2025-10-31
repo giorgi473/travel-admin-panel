@@ -1,7 +1,18 @@
-import React from "react";
+import { ProductsHeader } from "@/components/tours/products-header";
+import { StatsGrid } from "@/components/tours/stats-grid";
+import { WelcomeCard } from "@/components/tours/welcome-card";
+import type React from "react";
 
-function page() {
-  return <div className="p-4 mx-auto space-y-8">pagesdsdsdsd</div>;
-}
+const userName = "Giorgi Kavtaradze";
 
-export default page;
+const Page: React.FC = () => {
+  return (
+    <div className="p-4 mx-auto space-y-8">
+      <WelcomeCard userName={userName} />
+      <StatsGrid />
+      <ProductsHeader />
+    </div>
+  );
+};
+
+export default Page;
