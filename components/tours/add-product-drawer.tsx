@@ -27,6 +27,10 @@
 // import { X, Plus, Trash2, Loader2 } from "lucide-react";
 // import { Card } from "@/components/ui/card";
 // import { ImageUpload } from "../modules/image-upload";
+// import {
+//   transliterateToEnglish,
+//   transliterateToGeorgian,
+// } from "@/lib/transliteration";
 
 // const bilingualSchema = z.object({
 //   en: z.string().min(1, "English version required"),
@@ -136,11 +140,15 @@
 //   ) => {
 //     const newTours = [...popularTours];
 //     if (lang) {
+//       const processedValue =
+//         lang === "en"
+//           ? transliterateToEnglish(value)
+//           : transliterateToGeorgian(value);
 //       newTours[index] = {
 //         ...newTours[index],
 //         [field]: {
 //           ...(newTours[index][field] as { en: string; ka: string }),
-//           [lang]: value,
+//           [lang]: processedValue,
 //         },
 //       };
 //     } else {
@@ -151,6 +159,17 @@
 //     }
 //     setPopularTours(newTours);
 //   };
+
+//   // ჰენდლერი მთავარი ფორმისთვის: ტრანსლიტერაცია onChange-ში
+//   const handleBilingualChange =
+//     (lang: "en" | "ka") =>
+//     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+//       const processedValue =
+//         lang === "en"
+//           ? transliterateToEnglish(e.target.value)
+//           : transliterateToGeorgian(e.target.value);
+//       return processedValue;
+//     };
 
 //   return (
 //     <Drawer open={open} onOpenChange={onOpenChange}>
@@ -196,6 +215,9 @@
 //                             <Input
 //                               placeholder="One-Day Canyon Tour"
 //                               {...field}
+//                               onChange={(e) =>
+//                                 field.onChange(handleBilingualChange("en")(e))
+//                               }
 //                               className="text-sm sm:text-base h-10"
 //                             />
 //                           </FormControl>
@@ -216,6 +238,9 @@
 //                             <Input
 //                               placeholder="კანიონების ერთდღიანი ტური"
 //                               {...field}
+//                               onChange={(e) =>
+//                                 field.onChange(handleBilingualChange("ka")(e))
+//                               }
 //                               className="text-sm sm:text-base h-10"
 //                             />
 //                           </FormControl>
@@ -256,6 +281,9 @@
 //                             <Textarea
 //                               placeholder="Discover the geographical and biological diversity..."
 //                               {...field}
+//                               onChange={(e) =>
+//                                 field.onChange(handleBilingualChange("en")(e))
+//                               }
 //                               className="text-sm sm:text-base min-h-20 resize-none"
 //                             />
 //                           </FormControl>
@@ -276,6 +304,9 @@
 //                             <Textarea
 //                               placeholder="აღმოაჩინე დასავლეთ საქართველოს..."
 //                               {...field}
+//                               onChange={(e) =>
+//                                 field.onChange(handleBilingualChange("ka")(e))
+//                               }
 //                               className="text-sm sm:text-base min-h-20 resize-none"
 //                             />
 //                           </FormControl>
@@ -305,6 +336,9 @@
 //                             <Input
 //                               placeholder="8-12 hours"
 //                               {...field}
+//                               onChange={(e) =>
+//                                 field.onChange(handleBilingualChange("en")(e))
+//                               }
 //                               className="text-sm sm:text-base h-10"
 //                             />
 //                           </FormControl>
@@ -325,6 +359,9 @@
 //                             <Input
 //                               placeholder="8-12 სთ"
 //                               {...field}
+//                               onChange={(e) =>
+//                                 field.onChange(handleBilingualChange("ka")(e))
+//                               }
 //                               className="text-sm sm:text-base h-10"
 //                             />
 //                           </FormControl>
@@ -347,6 +384,9 @@
 //                             <Input
 //                               placeholder="18 attractions, 3 activities"
 //                               {...field}
+//                               onChange={(e) =>
+//                                 field.onChange(handleBilingualChange("en")(e))
+//                               }
 //                               className="text-sm sm:text-base h-10"
 //                             />
 //                           </FormControl>
@@ -367,6 +407,9 @@
 //                             <Input
 //                               placeholder="18 სანახაობა 3 აქტივობა"
 //                               {...field}
+//                               onChange={(e) =>
+//                                 field.onChange(handleBilingualChange("ka")(e))
+//                               }
 //                               className="text-sm sm:text-base h-10"
 //                             />
 //                           </FormControl>
@@ -389,6 +432,9 @@
 //                             <Input
 //                               placeholder="₾ 250"
 //                               {...field}
+//                               onChange={(e) =>
+//                                 field.onChange(handleBilingualChange("en")(e))
+//                               }
 //                               className="text-sm sm:text-base h-10"
 //                             />
 //                           </FormControl>
@@ -409,6 +455,9 @@
 //                             <Input
 //                               placeholder="₾ 250"
 //                               {...field}
+//                               onChange={(e) =>
+//                                 field.onChange(handleBilingualChange("ka")(e))
+//                               }
 //                               className="text-sm sm:text-base h-10"
 //                             />
 //                           </FormControl>
@@ -610,6 +659,9 @@
 //     </Drawer>
 //   );
 // };
+
+// --------------------------------------------
+
 "use client";
 
 import type React from "react";
@@ -643,6 +695,7 @@ import {
   transliterateToEnglish,
   transliterateToGeorgian,
 } from "@/lib/transliteration";
+import { createTour } from "@/actions/tours-actions";
 
 const bilingualSchema = z.object({
   en: z.string().min(1, "English version required"),
@@ -700,23 +753,11 @@ export const AddProductDrawer: React.FC<AddProductDrawerProps> = ({
     const finalData = { ...data, popularTours };
 
     try {
-      const response = await fetch(
-        "https://nest-travel-api.vercel.app/api/v1/tours",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(finalData),
-        }
-      );
+      const result = await createTour(finalData);
 
-      if (!response.ok) {
-        throw new Error("Failed to create tour");
+      if (!result.success) {
+        throw new Error(result.error);
       }
-
-      const result = await response.json();
-      console.log("[v0] Tour created successfully:", result);
 
       form.reset();
       setPopularTours([]);
@@ -772,7 +813,6 @@ export const AddProductDrawer: React.FC<AddProductDrawerProps> = ({
     setPopularTours(newTours);
   };
 
-  // ჰენდლერი მთავარი ფორმისთვის: ტრანსლიტერაცია onChange-ში
   const handleBilingualChange =
     (lang: "en" | "ka") =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
