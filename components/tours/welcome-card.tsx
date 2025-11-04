@@ -11,6 +11,7 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
+
 import { AddProductDrawer } from "@/components/tours/add-product-drawer";
 
 interface WelcomeCardProps {
