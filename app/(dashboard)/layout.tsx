@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+// import { useEffect } from "react";
+// import { useRouter } from "next/navigation";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Header } from "@/components/header";
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -11,14 +11,14 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const router = useRouter();
+  // const router = useRouter();
 
-  useEffect(() => {
-    const isAuthenticated = localStorage.getItem("isAuthenticated");
-    if (!isAuthenticated) {
-      router.push("/login");
-    }
-  }, [router]);
+  // useEffect(() => {
+  //   const isAuthenticated = localStorage.getItem("isAuthenticated");
+  //   if (!isAuthenticated) {
+  //     router.push("/login");
+  //   }
+  // }, [router]);
 
   return (
     <SidebarProvider>
