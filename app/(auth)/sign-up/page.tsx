@@ -66,7 +66,7 @@ export default function SignUpPage() {
 
   return (
     <div>
-      <Card className="w-full max-w-md bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 shadow-lg rounded-xl">
+      <Card className="w-full max-w-md bg-white/80 dark:bg-gray-800/10 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 shadow-lg rounded-xl">
         <CardHeader className="text-center space-y-1">
           <CardTitle className="text-xl font-semibold text-gray-900 dark:text-white">
             Sign Up
