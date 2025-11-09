@@ -5,7 +5,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import Link from "next/link";
-import { User, Mail, Lock, ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import {
+  User,
+  Mail,
+  Lock,
+  ArrowRight,
+  AlertCircle,
+  CheckCircle,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -33,7 +41,17 @@ const signUpSchema = z
     email: z.string().email({ message: "Invalid email address." }),
     password: z
       .string()
-      .min(8, { message: "Password must be at least 8 characters." }),
+      .min(8, { message: "Password must be at least 8 characters." })
+      .regex(/[A-Z]/, {
+        message: "Password must contain at least one uppercase letter.",
+      })
+      .regex(/[a-z]/, {
+        message: "Password must contain at least one lowercase letter.",
+      })
+      .regex(/[0-9]/, { message: "Password must contain at least one number." })
+      .regex(/[!@#$%^&*]/, {
+        message: "Password must contain at least one special character.",
+      }),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -43,10 +61,17 @@ const signUpSchema = z
 
 type FormData = z.infer<typeof signUpSchema>;
 
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://nest-travel-api.vercel.app/api/v1";
+
 export default function SignUpPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const cardRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -56,7 +81,7 @@ export default function SignUpPage() {
       const y = e.clientY - rect.top;
       const centerX = rect.width / 2;
       const centerY = rect.height / 2;
-      const rotateX = ((y - centerY) / centerY) * 5; // მაქს 5 გრადუსი
+      const rotateX = ((y - centerY) / centerY) * 5;
       const rotateY = ((centerX - x) / centerX) * 5;
       setTilt({ x: rotateX, y: rotateY });
     };
@@ -91,9 +116,39 @@ export default function SignUpPage() {
 
   async function onSubmit(values: FormData) {
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500)); // Simulate API
-    console.log("Sign Up:", values);
-    setIsLoading(false);
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    try {
+      const response = await fetch(`${API_URL}/auth/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: values.username,
+          email: values.email,
+          password: values.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setErrorMessage(data.message || "Registration failed");
+        return;
+      }
+
+      setSuccessMessage("Registration successful! Redirecting to Sign In...");
+      setTimeout(() => {
+        router.push("/sign-in");
+      }, 1500);
+    } catch (error) {
+      setErrorMessage("An error occurred. Please try again.");
+      console.error("Registration error:", error);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -108,14 +163,32 @@ export default function SignUpPage() {
         }}
       >
         <CardHeader className="text-center space-y-1">
-          <CardTitle className="text-xl font-semibold text-gray-900 dark:text-white">
+          <CardTitle className="text-2xl font-semibold text-gray-900 dark:text-white">
             Sign Up
           </CardTitle>
           <CardDescription className="text-gray-500 dark:text-gray-400">
-            Create your account today
+            Create your account to get started
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {errorMessage && (
+            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-2">
+              <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-red-600 dark:text-red-400">
+                {errorMessage}
+              </p>
+            </div>
+          )}
+
+          {successMessage && (
+            <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-start gap-2">
+              <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-green-600 dark:text-green-400">
+                {successMessage}
+              </p>
+            </div>
+          )}
+
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
@@ -131,7 +204,7 @@ export default function SignUpPage() {
                         <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <Input
                           placeholder="Your username"
-                          className="pl-10 h-11 bg-gray-50/50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-600 rounded-lg focus-visible:ring-1 focus-visible:ring-gray-300 dark:focus-visible:ring-gray-600"
+                          className="pl-10 h-11 bg-gray-50/50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-600 rounded-lg"
                           {...field}
                         />
                       </div>
@@ -155,7 +228,7 @@ export default function SignUpPage() {
                         <Input
                           placeholder="you@example.com"
                           type="email"
-                          className="pl-10 h-11 bg-gray-50/50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-600 rounded-lg focus-visible:ring-1 focus-visible:ring-gray-300 dark:focus-visible:ring-gray-600"
+                          className="pl-10 h-11 bg-gray-50/50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-600 rounded-lg"
                           {...field}
                         />
                       </div>
@@ -179,7 +252,7 @@ export default function SignUpPage() {
                         <Input
                           placeholder="••••••••"
                           type="password"
-                          className="pl-10 h-11 bg-gray-50/50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-600 rounded-lg focus-visible:ring-1 focus-visible:ring-gray-300 dark:focus-visible:ring-gray-600"
+                          className="pl-10 h-11 bg-gray-50/50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-600 rounded-lg"
                           {...field}
                         />
                       </div>
@@ -203,7 +276,7 @@ export default function SignUpPage() {
                         <Input
                           placeholder="••••••••"
                           type="password"
-                          className="pl-10 h-11 bg-gray-50/50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-600 rounded-lg focus-visible:ring-1 focus-visible:ring-gray-300 dark:focus-visible:ring-gray-600"
+                          className="pl-10 h-11 bg-gray-50/50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-600 rounded-lg"
                           {...field}
                         />
                       </div>
@@ -221,7 +294,7 @@ export default function SignUpPage() {
               >
                 {isLoading ? (
                   <div className="flex items-center justify-center">
-                    <div className="w-4 h-4 border-2 border-white/30 dark:border-gray-900/30 border-t-white dark:border-t-gray-900 rounded-full animate-spin mr-2"></div>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
                     Creating Account...
                   </div>
                 ) : (
