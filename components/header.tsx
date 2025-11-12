@@ -28,8 +28,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 export function Header() {
   const router = useRouter();
   const [avatar, setAvatar] = useState<string | null>(null);
-  const [firstName, setFirstName] = useState<string>("");
-  const [lastName, setLastName] = useState<string>("");
   const [username, setUsername] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [loading, setLoading] = useState(false);
@@ -38,10 +36,17 @@ export function Header() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const getInitials = () => {
-    if (firstName && lastName) {
-      return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+    if (!username) return "U";
+
+    const trimmed = username.trim();
+    const spaceIndex = trimmed.indexOf(" ");
+
+    if (spaceIndex > 0) {
+      const firstLetter = trimmed.charAt(0).toUpperCase();
+      const secondLetter = trimmed.charAt(spaceIndex + 1).toUpperCase();
+      return `${firstLetter}${secondLetter}`;
     }
-    return firstName ? firstName.charAt(0).toUpperCase() : "GK";
+    return trimmed.charAt(0).toUpperCase();
   };
 
   const getAccessToken = () => {
@@ -69,8 +74,6 @@ export function Header() {
         );
         if (response.ok) {
           const data = await response.json();
-          setFirstName(data.firstName || "");
-          setLastName(data.lastName || "");
           setUsername(data.username || "");
           setEmail(data.email || "");
           if (data.avatar) {
