@@ -1,12 +1,11 @@
 "use client";
 
-import { Bell, Search, Upload, LogOut, Settings } from "lucide-react";
+import { Search, Upload, LogOut, Settings } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,15 +16,14 @@ import {
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ModeToggle } from "@/components/ModeToggle";
 import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Card, CardContent } from "@/components/ui/card";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function Header() {
   const router = useRouter();
@@ -43,16 +41,20 @@ export function Header() {
     if (firstName && lastName) {
       return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
     }
-    return firstName ? firstName.charAt(0).toUpperCase() : "U";
+    return firstName ? firstName.charAt(0).toUpperCase() : "GK";
+  };
+
+  const getAccessToken = () => {
+    return document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("accessToken="))
+      ?.split("=")[1];
   };
 
   React.useEffect(() => {
     const loadUserData = async () => {
       try {
-        const accessToken = document.cookie
-          .split("; ")
-          .find((row) => row.startsWith("accessToken="))
-          ?.split("=")[1];
+        const accessToken = getAccessToken();
         if (!accessToken) {
           setAvatarLoading(false);
           return;
@@ -76,7 +78,7 @@ export function Header() {
           }
         }
       } catch (error) {
-        console.error(error);
+        throw new Error(error as any);
       } finally {
         setAvatarLoading(false);
       }
@@ -102,18 +104,25 @@ export function Header() {
     if (!file) {
       return;
     }
+
+    if (!file.type.startsWith("image/")) {
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      return;
+    }
+
     setLoading(true);
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const accessToken = document.cookie
-        .split("; ")
-        .find((row) => row.startsWith("accessToken="))
-        ?.split("=")[1];
+      const accessToken = getAccessToken();
+
       if (!accessToken) {
-        alert("No access token found");
         return;
       }
+
       const response = await fetch(
         `https://nest-travel-api.vercel.app/api/v1/auth/me/upload-avatar`,
         {
@@ -124,28 +133,33 @@ export function Header() {
           body: formData,
         }
       );
+
       const data = await response.json();
+
       if (response.ok) {
         setAvatar(data.user.avatar);
         const user = JSON.parse(localStorage.getItem("user") || "{}");
         user.avatar = data.user.avatar;
         localStorage.setItem("user", JSON.stringify(user));
-      } else {
-        alert("Upload failed: " + data.message);
+
+        setProfileOpen(false);
       }
     } catch (error) {
-      alert("Error: " + String(error));
+      throw new Error(error as any);
     } finally {
       setLoading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 
   return (
     <>
-      <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-2 lg:px-2">
+      <header className="sticky top-0 z-10 flex h-14 items-center gap-2 sm:gap-4 border-b bg-background px-2 sm:px-4 lg:px-6">
         <SidebarTrigger />
-        <div className="flex-1">
-          <form className="max-w-md">
+        <div className="hidden sm:flex flex-1">
+          <form className="w-full max-w-md">
             <div className="relative">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
@@ -156,11 +170,8 @@ export function Header() {
             </div>
           </form>
         </div>
+        <div className="flex-1 sm:hidden" />
         <ModeToggle />
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
-          <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-primary" />
-        </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -172,7 +183,7 @@ export function Header() {
                 <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
               ) : avatar ? (
                 <Image
-                  src={avatar}
+                  src={avatar || "/placeholder.svg"}
                   alt="avatar"
                   width={32}
                   height={32}
@@ -185,12 +196,15 @@ export function Header() {
               )}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-80">
+          <DropdownMenuContent
+            align="end"
+            className="w-[calc(100vw-2rem)] sm:w-80"
+          >
             <div className="flex items-start gap-3 p-3 select-none">
               <div className="h-10 w-10 rounded-full overflow-hidden bg-muted flex items-center justify-center flex-shrink-0 select-none">
                 {avatar ? (
                   <Image
-                    src={avatar}
+                    src={avatar || "/placeholder.svg"}
                     alt="avatar"
                     width={40}
                     height={40}
@@ -202,72 +216,68 @@ export function Header() {
                   </div>
                 )}
               </div>
-              <div className="space-y-1">
-                <p className="text-sm font-medium">{username}</p>
-                <p className="text-xs text-muted-foreground">{email}</p>
-                <span className="flex gap-2 justify-between w-full mt-2">
-                  <AlertDialog open={profileOpen} onOpenChange={setProfileOpen}>
-                    <AlertDialogTrigger asChild>
+              <div className="space-y-1 min-w-0 flex-1">
+                <p className="text-sm font-medium truncate">{username}</p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {email}
+                </p>
+                <span className="flex flex-col sm:flex-row gap-2 sm:justify-between w-full mt-2">
+                  <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
+                    <DialogTrigger asChild>
                       <Button
                         variant="outline"
                         size="sm"
-                        className="text-xs h-6 px-3"
+                        className="text-xs h-6 px-3 bg-transparent w-full sm:w-auto"
                       >
                         <Settings className="w-3 h-3 mr-1" /> Manage Account
                       </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent className="max-w-md">
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Manage Account</AlertDialogTitle>
-                      </AlertDialogHeader>
-                      <Card>
-                        <CardContent className="space-y-6">
-                          <div className="space-y-3">
-                            <Label className="text-sm font-medium">
-                              Profile Picture
-                            </Label>
-                            <div className="flex flex-col items-center space-y-3">
-                              <div className="h-24 w-24 rounded-full overflow-hidden bg-muted flex items-center justify-center">
-                                {avatar ? (
-                                  <Image
-                                    src={avatar}
-                                    alt="current avatar"
-                                    width={96}
-                                    height={96}
-                                    className="h-full w-full object-cover"
-                                  />
-                                ) : (
-                                  <div className="h-full w-full bg-primary rounded-full flex items-center justify-center text-white text-lg font-medium">
-                                    {getInitials()}
-                                  </div>
-                                )}
-                              </div>
-                              <Button
-                                type="button"
-                                onClick={handleAvatarClick}
-                                disabled={loading}
-                                className="gap-2 w-full max-w-xs"
-                                size="sm"
-                              >
-                                <Upload className="h-4 w-4" />
-                                {loading ? "Uploading..." : "Change Avatar"}
-                              </Button>
-                              <p className="text-xs text-muted-foreground text-center">
-                                Images only (JPG, PNG, GIF). Max size: 5MB.
-                              </p>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                    </DialogTrigger>
+                    <DialogContent className="w-[calc(100vw-2rem)] sm:w-full sm:max-w-lg">
+                      <DialogHeader>
+                        <DialogTitle>Manage Account</DialogTitle>
+                        <DialogDescription>
+                          Update your profile picture and account information
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="flex flex-col sm:flex-row items-center sm:items-center gap-4 sm:gap-6 py-1">
+                        <Avatar className="h-20 w-20 flex-shrink-0">
+                          <AvatarImage
+                            src={avatar || undefined}
+                            alt="Profile picture"
+                            className="object-cover"
+                          />
+                          <AvatarFallback className="bg-primary text-white text-xl">
+                            {getInitials()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 space-y-1 text-center sm:text-left w-full sm:w-auto min-w-0">
+                          <p className="text-sm font-medium mb-1 truncate">
+                            {username}
+                          </p>
+                          <p className="text-sm font-medium text-gray-500 truncate">
+                            {email}
+                          </p>
+                        </div>
+                        <div className="flex-shrink-0 w-full sm:w-auto">
+                          <Button
+                            type="button"
+                            onClick={handleAvatarClick}
+                            disabled={loading}
+                            size="xs"
+                            variant={"outline"}
+                            className="gap-2 text-xs w-full sm:w-auto"
+                          >
+                            <Upload className="h-4 w-4" />
+                            {loading ? "Uploading..." : "Change"}
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="text-xs h-6 px-3"
+                    className="text-xs h-6 px-3 bg-transparent w-full sm:w-auto"
                     onClick={handleLogout}
                   >
                     <LogOut className="w-3 h-3 mr-1" /> Sign out
