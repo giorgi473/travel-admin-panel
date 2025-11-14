@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,15 +11,63 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
-
 import { AddProductDrawer } from "@/components/tours/add-product-drawer";
 
-interface WelcomeCardProps {
-  userName: string;
-}
-
-export const WelcomeCard: React.FC<WelcomeCardProps> = ({ userName }) => {
+export const WelcomeCard: React.FC = () => {
+  const [userName, setUserName] = useState<string>("");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const getAccessToken = () => {
+    return document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("accessToken="))
+      ?.split("=")[1];
+  };
+
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        const accessToken = getAccessToken();
+        if (!accessToken) {
+          setLoading(false);
+          return;
+        }
+        const response = await fetch(
+          `https://nest-travel-api.vercel.app/api/v1/auth/me`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setUserName(data.username || "");
+        }
+      } catch (error) {
+        console.error("Error loading user data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadUserData();
+  }, []);
+
+  if (loading) {
+    return (
+      <Card className="flex flex-col md:flex-row items-center gap-2">
+        <div className="flex-1 space-y-4">
+          <CardHeader>
+            <div className="h-12 bg-muted animate-pulse rounded" />
+          </CardHeader>
+          <CardContent>
+            <div className="h-6 bg-muted animate-pulse rounded" />
+          </CardContent>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <>

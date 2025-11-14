@@ -5,12 +5,10 @@ import { WelcomeCard } from "@/components/tours/welcome-card";
 import { ToursTable } from "@/components/tours/tours-table";
 import { GrowthTrendChart } from "@/components/tours/chart/chart-area-gradient";
 
-const userName = "Giorgi Kavtaradze";
-
 const Page: React.FC = () => {
   return (
     <div className="p-4 mx-auto space-y-8">
-      <WelcomeCard userName={userName} />
+      <WelcomeCard />
       <StatsGrid />
       <ProductsHeader />
       <section>
